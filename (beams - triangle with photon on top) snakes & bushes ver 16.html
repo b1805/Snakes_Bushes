@@ -1,0 +1,236 @@
+<!-- MIT License
+
+Copyright (c) 2024 Bhavya Jain
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Snakes & Bushes (Right Triangle Version with Beams and Photon)</title>
+</head>
+<link rel="stylesheet" href="style.css">
+<body onload="initialize()">
+  <div class="container">
+    <div class="dark-mode-pill-container">
+      <h1>Snakes & Bushes (Right Triangle Version with Beams and Photon)</h1>
+      <div class="dark-mode-pill"><label>Dark Mode</label>
+        <label class="switch" for="darkModeToggle">
+          <input type="checkbox" id="darkModeToggle" onclick="toggleDarkMode()">
+          <span class="slider2 round"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+<div class = "container">
+    <div class="flex-container">
+        <div class="flex-item">
+            <h2>Controls</h2>
+            <div>
+              <label for="triangleSideInput">Grid Size
+              <select id="triangleSideInput">
+                  <option value="200">Big</option>
+                  <option selected value="100">Default</option>
+                  <option value="50">Small</option>
+              </select>
+              <button onclick="changeNumberTriangles()">Apply</button></label>
+            </div>
+            <div>
+              <label for="epsilonInput">Epsilon Value: 
+              <select id="epsilonInput">
+                <option value="0.1">0.1</option>
+                <option value="0.01">0.01</option>
+                <option selected value="0.001">0.001 (Default) </option>
+                <option value="0.0001">0.0001</option>
+                <option value="0.00001">0.00001</option>
+                <option value="0.000001">0.000001</option>
+                <option value="0.0000001">0.0000001</option>
+                <option value="0.00000001">0.00000001</option>
+                <option value="0.000000001">0.000000001</option>
+                <option value="0.0000000001">0.0000000001</option>
+                <option value="0.00000000001">0.00000000001</option>
+                <option value="0.000000000001">0.000000000001</option>
+            </select>
+            <button onclick="changeEpsilon()">Apply</button></label>
+            </div>
+            <p> </p>
+            <!--<div>
+              <label for="tailSizeInput">Photon Thickness
+                <input type="number" id="tailSizeInput" min="0.01" max="10.00" value="2.00" step="0.01">
+              <button id="thicknessButton" onclick="changeThickness()">Apply</button></label>
+            </div>-->
+            <div>
+              <label for="showMouseCoordsCheckBox">Show Mouse Coords
+              <input type="checkbox" id="mouseVisibilityCheckBox" checked="true" onclick="changeMouseCoordsVisibility()"> </label>
+            </div>
+            <p> </p>
+            <div>
+                <label for="speedInput">Speed
+                  <input type="range" min="1" max="1000" value="500" class="slider" id="speedInput">
+                  <span id="speedValue">5</span>
+                <button onclick="changeSpeed()">Apply</button></label>
+            </div>
+            <p> </p>
+            <h2>M*N, Shape & Coordinates </h2>
+            <table>
+              <tr>
+                <th>M & N</th>
+                <th>Light Source Coordinates</th>
+              </tr>
+              <tr>
+                <th>
+                  <label for="MInput">M: 
+                  <input type="number" id="MInput" min="1" max="1000" value="1"></label>
+                </th>
+                <th>
+                  <label for="lightSourceXInput">X: 
+                  <input type="number" id="lightSourceXInput" min="1" max="1000" value="450"></label>
+                </th>
+              </tr>
+              <tr>
+                <th>
+                  <label for="NInput">N: 
+                  <input type="number" id="NInput" min="1" max="1000" value="1"></label>
+                </th>
+                <th>
+                  <label for="lightSourceYInput">Y: 
+                  <input type="number" id="lightSourceYInput" min="1" max="1000" value="400"></label>
+                </th>
+              </tr>
+              <tr>
+                <th>
+                  <button onclick="changeMN()">Apply M*N & Autopick Coords</button>
+                </th>
+                <th>
+                  <button onclick="changeLightSourceCoordinates()">Apply Coordinates</button>
+                </th>
+              </tr>
+              <tr>
+                <th>
+                  <label></label>
+                  <button id="createShapeButton" onclick="createShape()">Create Shape & Autopick Coords</button>
+                </th>
+                <th>
+                  <label></label>
+                  <button id="createShape2Button" onclick="createShape2()">Create Shape & Light Source Coords</button>
+                </th>
+              </tr>
+            </table>
+            <h2>Magnification</h2>
+            <div>
+              <label><input type="radio" id="selectButton" name="zoomOption" value="Select" checked>Select
+              <input type="radio" id="magnifyButton" name="zoomOption" value="Magnify">Magnify
+              <input type="radio" id="demagnifyButton" name="zoomOption" value="Demagnify">Demagnify
+              <input type="radio" id="centerButton" name="zoomOption" value="Center">Center</label>
+            </div>
+            <p></p>
+            <div>
+              <label>Zoom Scale:
+              <input type="number" id="zoomInput" min="0.5" max="1000000.0" step="0.1" value="1.0">
+              <button id = "resetZoomDragButton" onclick="resetZoomDrag()">Reset Zoom & Drag</button></label>
+            </div>          
+        </div>
+        <div class="flex-item">
+          <br/>
+          <canvas id="canvas" width="1000" height="800" style="border: 1px solid black;" ></canvas>
+          <div id="mouse_coords">
+              <span id="x_coord">Y</span>
+              <span id="y_coord">X</span>
+          </div>
+          </div>
+          <div>
+          <h2>Colours</h2>
+            <div>
+                <label for="wallColorInput">Wall Colour
+                <input type="color" id="wallColorInput" value="#A000C8"></label>
+            </div>
+            <div>
+                <label for="photonTailColorInput">Beam Tail Colour
+                <input type="color" id="photonTailColorInput" value="#FFA500"></label>
+            </div>
+            <div>
+              <label for="photonTopColorInput">Photon (on top) Tail Colour
+              <input type="color" id="photonTopColorInput" value="#FF0000"></label>
+          </div>
+            <div>
+                <label for="lightSourceColorInput">Light Source Point Colour
+                <input type="color" id="lightSourceColorInput" value="#FF0000"></label>
+            </div>
+            <div>
+              <label for="boundColorInput">Shape Boundary Colour
+              <input type="color" id="boundColorInput" value="#FF0000"></label>
+            </div>
+            <div>
+              <label for="dragLineColorInput">Dragging Line Colour
+              <input type="color" id="dragLineColorInput" value="#FF0000"></label>
+            </div>
+          <p> </p>
+          <button onclick="applyColors()">Apply Colours</button>
+          <h2> Animation </h2>
+          <button id="startMultiAnimButton" onclick="startMultiAnimation()">Start Multi Animation Upto M*N with 1 Colour</button>
+          <p></p>
+          <button id="startMultiAnimButton2" onclick="startMultiAnimation2()">Start Multi Animation Upto M*N with Multiple Random Colours</button>
+          <p></p>
+          <button id="startAnimButton" onclick="startAnimation()">Start Animation M*N</button>
+          <p></p>
+          <button id="addPhotonButton" onclick="addPhoton()">Add New M*N with Random Colour</button>
+          <p></p>
+          <button id="addPhoton2Button" onclick="addPhoton2()">Add New M*N with Selected Colour</button>
+          <p></p>
+          <button id="stopAnimButton" onclick="stopAnimation()">Stop Animation</button>
+</div>
+</div>
+</div>
+<div class="container">
+  <div class="flex-container">
+  <h2 id="recordingHeader">Recording</h2>
+  </div>
+  <div>
+    <label for="backgroundInput">Remove Background for Recording
+      <select id="backgroundInput">
+          <option selected value="0">Off</option>
+          <option value="1">On</option>
+    </select>
+    <button onclick="blackbackground()">Apply</button></label>
+  </div>
+  <div>
+    <button id="startRecButton" onclick="startRecording()">Start Recording</button>
+    <button id="stopRecButton" onclick="stopRecording()">Stop Recording</button>
+    <button id="startAllButton" onclick="startAnimationAndRecording()">Start Animation and Recording</button>
+  </div>
+  <div>
+    <p> </p>
+    <label id="status">Status: Recording not started</label>
+    <p> </p>
+    <label>Main Canvas</label>
+    <video id="recording" width="160" height="120" controls autoplay loop></video>
+    <p> </p>
+    <label>After the recording is complete:
+    <a id="downloadButton" href="#" download="Recording.webm">Download</a></label>
+    <p> </p>
+  </div>
+</div>
+<script src="whammy.js"></script>
+<script src="globals.js"></script>
+<script src="classes.js"></script>
+<script src="script.js"></script>
+<script src="events.js"></script>
+</body>
+</html>
