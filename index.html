@@ -24,13 +24,13 @@ SOFTWARE. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Snakes & Bushes (Right Triangle Version with Beams and Photon)</title>
+<title>Custom Room Illuminator</title>
 </head>
 <link rel="stylesheet" href="style.css">
 <body onload="initialize()">
   <div class="container">
     <div class="dark-mode-pill-container">
-      <h1>Snakes & Bushes (Right Triangle Version with Beams and Photon)</h1>
+      <h1>Custom Room Illuminator</h1>
       <div class="dark-mode-pill"><label>Dark Mode</label>
         <label class="switch" for="darkModeToggle">
           <input type="checkbox" id="darkModeToggle" onclick="toggleDarkMode()">
@@ -42,13 +42,21 @@ SOFTWARE. -->
 <div class = "container">
     <div class="flex-container">
         <div class="flex-item">
+            <h2>
+              <input type="radio" name="version" id="triangle" checked onchange="toggleVersion()"> TRIANGLE GRID
+              <input type="radio" name="version" id="square" onchange="toggleVersion()"> SQUARE GRID
+            </h2>
             <h2>Controls</h2>
-            <div>
+            <div id="triangleDiv">
               <label for="triangleSideInput">Grid Size
               <select id="triangleSideInput">
-                  <option value="200">Big</option>
-                  <option selected value="100">Default</option>
-                  <option value="50">Small</option>
+                  <option value="200">40 Triangles</option>
+                  <option selected value="100">160 Triangles (Default)</option>
+                  <option value="50">640 Triangles</option>
+                  <option value="40">1000 Triangles</option>
+                  <option value="20">4000 Triangles</option>
+                  <option value="10">16000 Triangles</option>
+                  <option value="8">25000 Triangles</option>
               </select>
               <button onclick="changeNumberTriangles()">Apply</button></label>
             </div>
@@ -70,22 +78,37 @@ SOFTWARE. -->
             </select>
             <button onclick="changeEpsilon()">Apply</button></label>
             </div>
-            <p> </p>
-            <!--<div>
-              <label for="tailSizeInput">Photon Thickness
-                <input type="number" id="tailSizeInput" min="0.01" max="10.00" value="2.00" step="0.01">
-              <button id="thicknessButton" onclick="changeThickness()">Apply</button></label>
-            </div>-->
             <div>
               <label for="showMouseCoordsCheckBox">Show Mouse Coords
               <input type="checkbox" id="mouseVisibilityCheckBox" checked="true" onclick="changeMouseCoordsVisibility()"> </label>
             </div>
-            <p> </p>
+            <div>
+              <label>Photon Thickness
+              <input type="number" id="tailSize2Input" min="0.01" max="10.00" value="2.00" step="0.01"></td>
+              <button id="thicknessButton" onclick="changeThickness()">Apply</button></label>
+            </div>
+            <div>
+              <label>Distance from Source
+              <input type="number" id="sourceDistanceInput" min="0.1" max="10.00" value="2.50" step="0.01"></td>
+              <button id="sourceDistanceButton" onclick="changeDistanceFromSource()">Apply</button></label>
+            </div>
+            <div>
+              <label for="partitionOnOffInput">Enable Partition/Post
+              <select id="partitionOnOffInput">
+                  <option selected value="0">Off</option>
+                  <option value="1">On</option>
+              </select>
+              <button onclick="turnPartitionOnOff()">Apply</button></label>
+            </div>
             <div>
                 <label for="speedInput">Speed
                   <input type="range" min="1" max="1000" value="500" class="slider" id="speedInput">
                   <span id="speedValue">5</span>
                 <button onclick="changeSpeed()">Apply</button></label>
+            </div>
+            <div>
+              <h2>Advanced Instantaneous Speed</h2>
+              <button id = "advancedSpeedButton" onclick="changeSpeed2()">Apply Instantaneous Speed!</button>
             </div>
             <p> </p>
             <h2>M*N, Shape & Coordinates </h2>
@@ -114,7 +137,7 @@ SOFTWARE. -->
                   <input type="number" id="lightSourceYInput" min="1" max="1000" value="400"></label>
                 </th>
               </tr>
-              <tr>
+              <!--<tr>
                 <th>
                   <button onclick="changeMN()">Apply M*N & Autopick Coords</button>
                 </th>
@@ -122,14 +145,14 @@ SOFTWARE. -->
                   <button onclick="changeLightSourceCoordinates()">Apply Coordinates</button>
                 </th>
               </tr>
-              <tr>
+              <tr>-->
                 <th>
                   <label></label>
-                  <button id="createShapeButton" onclick="createShape()">Create Shape & Autopick Coords</button>
+                  <button id="createShapeButton" onclick="createShape()">Create Shape, Apply M*N & Autopick Coords</button>
                 </th>
                 <th>
                   <label></label>
-                  <button id="createShape2Button" onclick="createShape2()">Create Shape & Light Source Coords</button>
+                  <button id="createShape2Button" onclick="createShape2()">Create Shape, Apply M*N & Light Source Coords</button>
                 </th>
               </tr>
             </table>
@@ -145,6 +168,27 @@ SOFTWARE. -->
               <label>Zoom Scale:
               <input type="number" id="zoomInput" min="0.5" max="1000000.0" step="0.1" value="1.0">
               <button id = "resetZoomDragButton" onclick="resetZoomDrag()">Reset Zoom & Drag</button></label>
+            </div>
+            <div>
+              <h2 id="part">Partition/Post Coordinates</h2>
+                <table>
+                  <tr>
+                    <th> </th>
+                    <th id="part1"> Point 1</th>
+                    <th id="part2"> Point 2</th>
+                  </tr>
+                  <tr>
+                    <th id = "partX">X: </th>
+                    <td><input type="number" id="partBoxXInput1" min="1" max="1000" value="500"></td>
+                    <td><input type="number" id="partBoxXInput2" min="1" max="1000" value="500"></td>
+                    <td rowspan = "2"><button id="partButton" onclick="changePartitionCoordinates()">Apply Coordinates</button></td>
+                  </tr>
+                  <tr>
+                    <th id = "partY">Y: </th>
+                    <td><input type="number" id="partBoxYInput1" min="1" max="1000" value="400"></td>
+                    <td><input type="number" id="partBoxYInput2" min="1" max="1000" value="500"></td>
+                  </tr>
+                </table>
             </div>          
         </div>
         <div class="flex-item">
@@ -154,8 +198,8 @@ SOFTWARE. -->
               <span id="x_coord">Y</span>
               <span id="y_coord">X</span>
           </div>
-          </div>
-          <div>
+        </div>
+          <div class="flex-item">
           <h2>Colours</h2>
             <div>
                 <label for="wallColorInput">Wall Colour
@@ -167,11 +211,11 @@ SOFTWARE. -->
             </div>
             <div>
               <label for="photonTopColorInput">Photon (on top) Tail Colour
-              <input type="color" id="photonTopColorInput" value="#FF0000"></label>
+              <input type="color" id="photonTopColorInput" value="#009DFF"></label>
           </div>
             <div>
                 <label for="lightSourceColorInput">Light Source Point Colour
-                <input type="color" id="lightSourceColorInput" value="#FF0000"></label>
+                <input type="color" id="lightSourceColorInput" value="#00FF00"></label>
             </div>
             <div>
               <label for="boundColorInput">Shape Boundary Colour
@@ -183,20 +227,52 @@ SOFTWARE. -->
             </div>
           <p> </p>
           <button onclick="applyColors()">Apply Colours</button>
+          <div>
+            <h2>Save & Load</h2>
+            <label><button id="loadSettingsButton" onclick="loadSettings(document.getElementById('loadSettingsInput').files[0])">Load Settings</button>
+            <button id="saveSettingsButton" onclick="saveSettings()">Save Settings</button>
+            <input type="file" id="loadSettingsInput"></label>
+            <label><button id="loadButton" onclick="loadShape(document.getElementById('loadInput').files[0])">Load Shape</button>
+            <button id="saveButton" onclick="saveShape()">Save Shape</button>
+            <input type="file" id="loadInput"></label>
+          </div>
           <h2> Animation </h2>
-          <button id="startMultiAnimButton" onclick="startMultiAnimation()">Start Multi Animation Upto M*N with 1 Colour</button>
-          <p></p>
-          <button id="startMultiAnimButton2" onclick="startMultiAnimation2()">Start Multi Animation Upto M*N with Multiple Random Colours</button>
-          <p></p>
-          <button id="startAnimButton" onclick="startAnimation()">Start Animation M*N</button>
-          <p></p>
-          <button id="addPhotonButton" onclick="addPhoton()">Add New M*N with Random Colour</button>
-          <p></p>
-          <button id="addPhoton2Button" onclick="addPhoton2()">Add New M*N with Selected Colour</button>
-          <p></p>
+          <div>
+            <label for="modeInput">Mode
+            <select id="modeInput">
+                <option value="1">Only Photon</option>
+                <option selected value="2">Photon & Beam</option>
+                <option value="3">Only Beam</option>
+            </select>
+            <button onclick="changeMode()">Apply</button></label>
+          </div>
+          <label>
+          <button id="startMultiAnimButton" onclick="startMultiAnimation()">All Upto M*N</button>
+          <button id="startMultiOddAnimation" onclick="startMultiOddAnimation()">Odd Upto M*N</button>
+          (One Colour)
+          </label>
+          <label>
+          <button id="startMultiAnimButton2" onclick="startMultiAnimation2()">All Upto M*N</button>
+          <button id="startMultiOddAnimation2" onclick="startMultiOddAnimation2()">Odd Upto M*N</button>
+          (Random Colours)
+          </label>
+          <label>
+          <button id="startAnimButton" onclick="startAnimation()">Single M*N</button>
+          </label>
+          <label>
+          <button id="addPhotonButton" onclick="addPhoton()">Add New M*N</button>
+          (Random Colour)
+          </label>
+          <label>
+          <button id="addPhoton2Button" onclick="addPhoton2()">Add New M*N</button>
+          (Selected Colour)
+          </label>
+          <label>
           <button id="stopAnimButton" onclick="stopAnimation()">Stop Animation</button>
-</div>
-</div>
+          <button id="clearRaysButton" onclick="clearRays()">Clear Rays</button>
+          </label>
+        </div>
+    </div>
 </div>
 <div class="container">
   <div class="flex-container">
@@ -232,5 +308,6 @@ SOFTWARE. -->
 <script src="classes.js"></script>
 <script src="script.js"></script>
 <script src="events.js"></script>
+<script src="synchronizer.js"></script>
 </body>
 </html>
