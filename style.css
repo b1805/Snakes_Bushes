@@ -24,6 +24,9 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   background-color: #f0f2f5;
 }
+input[type="number"] {
+  width: 60px;
+}
 .triangle {
   cursor: pointer;
 }
@@ -101,34 +104,46 @@ label {
 #stopRecButton, 
 #startAllButton,
 #startMultiAnimButton,
-#startMultiAnimButton2 {
+#startMultiAnimButton2,
+#startMultiOddAnimation,
+#startMultiOddAnimation2,
+#saveButton,
+#saveSettingsButton {
   background-color: #42b72a;
 }
 #startAnimButton:hover, 
 #stopAnimButton:hover, 
 #startRecButton:hover, 
 #stopRecButton:hover, 
-#startAllButton:hover
-#startMultiAnimButton:hover
-#startMultiAnimButton2:hover {
+#startAllButton:hover,
+#startMultiAnimButton:hover,
+#startMultiAnimButton2:hover,
+#startMultiOddAnimation:hover,
+#startMultiOddAnimation2:hover,
+#saveButton:hover,
+#saveSettingsButton:hover {
   background-color: #339a1e;
 }
 #createShapeButton,
 #createShape2Button,
-#advancedSpeedButton {
+#advancedSpeedButton,
+#clearRaysButton,
+#resetZoomDragButton {
   background-color: rgb(253, 60, 60);
 }
 #createShapeButton:hover,
 #createShape2Button:hover,
-#advancedSpeedButton:hover {
+#advancedSpeedButton:hover,
+#clearRaysButton:hover,
+#resetZoomDragButton:hover {
   background-color: darkred;
-  margin-top: 10px;
 }
 input[type=checkbox] {
   width:20px; 
   height:20px;
 }
 #mouse_coords {
+  width: 105px;
   background-color: white;
   position: fixed;
   margin-top: 5px;
@@ -165,9 +180,13 @@ body.dark-mode #startAnimButton,
 body.dark-mode #stopAnimButton, 
 body.dark-mode #startRecButton, 
 body.dark-mode #stopRecButton, 
-body.dark-mode #startAllButton
+body.dark-mode #startAllButton,
 body.dark-mode #startMultiAnimButton,
-body.dark-mode #startMultiAnimButton2 {
+body.dark-mode #startMultiAnimButton2,
+body.dark-mode #startMultiOddAnimation,
+body.dark-mode #startMultiOddAnimation2,
+body.dark-mode #saveButton,
+body.dark-mode #saveSettingsButton {
   background-color: rgb(81, 255, 81);
 }
 body.dark-mode #startAnimButton:hover, 
@@ -175,21 +194,30 @@ body.dark-mode #stopAnimButton:hover,
 body.dark-mode #startRecButton:hover, 
 body.dark-mode #stopRecButton:hover, 
 body.dark-mode #startAllButton:hover,
-body.dark-mode #startMultiAnimButton,
-body.dark-mode #startMultiAnimButton2 {
+body.dark-mode #startMultiAnimButton:hover,
+body.dark-mode #startMultiAnimButton2:hover,
+body.dark-mode #startMultiOddAnimation:hover,
+body.dark-mode #startMultiOddAnimation2:hover,
+body.dark-mode #saveButton:hover,
+body.dark-mode #saveSettingsButton:hover {
   background-color: #a3ff91;
 }
 body.dark-mode #createShapeButton,
 body.dark-mode #createShape2Button,
-body.dark-mode #advancedSpeedButton {
+body.dark-mode #advancedSpeedButton,
+body.dark-mode #clearRaysButton,
+body.dark-mode #resetZoomDragButton {
   background-color: #ff5555;
 }
 body.dark-mode #createShapeButton:hover,
 body.dark-mode #createShape2Button:hover,
-body.dark-mode #advancedSpeedButton:hover {
+body.dark-mode #advancedSpeedButton:hover,
+body.dark-mode #clearRaysButton:hover,
+body.dark-mode #resetZoomDragButton:hover {
   background-color: rgb(255, 158, 158);
 }
 body.dark-mode #mouse_coords {
+  width: 105px;
   background-color: black;
   position: fixed;
   margin-top: 5px;
