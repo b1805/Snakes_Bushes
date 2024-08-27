@@ -20,6 +20,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. */
 
+// Add an event listener to resize the zoom when the window is resized
+window.addEventListener('resize', setZoom);
+
 // Stop dragging when mouse released
 document.onmouseup = () => {
   draggable = null;
@@ -56,18 +59,15 @@ canvas.onmousemove = (mouseEvent) => {
   const x_coord = document.getElementById("x_coord");
   const y_coord = document.getElementById("y_coord");
   const mouse_coords = document.getElementById("mouse_coords");
-  // Set the displayed mouse coords
-  /*
-  x_coord.innerHTML = "X: " + Math.floor(mouseEvent.clientX - canvas.getBoundingClientRect().x);
-  y_coord.innerHTML = "Y: " + Math.max(Math.floor(mouseEvent.clientY - canvas.getBoundingClientRect().y),0);
-  */
-  x_coord.innerHTML = "X: " + Math.max(Math.floor(mouseEvent.offsetX),0);
-  y_coord.innerHTML = "Y: " + Math.max(Math.floor(mouseEvent.offsetY),0);
+
+  x_coord.innerHTML = "X: " + Math.floor((mouseEvent.offsetX-X_TRANS)/TOTAL_ZOOM);
+  y_coord.innerHTML = "Y: " + Math.floor((mouseEvent.offsetY-Y_TRANS)/TOTAL_ZOOM);
   //mouse_coords.style.position = "fixed";
   //console.log(mouseEvent.clientX);
   //console.log(window.innerHeight + 17.5 - mouseEvent.clientY);
-  mouse_coords.style.left = mouseEvent.clientX + 'px';
-  mouse_coords.style.bottom = (window.innerHeight + 17.5 - mouseEvent.clientY) + 'px';
+  mouse_coords.style.left = mouseEvent.clientX/SCREEN_ZOOM + 'px';
+  mouse_coords.style.top = ((-50/SCREEN_ZOOM) + mouseEvent.pageY/SCREEN_ZOOM) + 'px';
+  //console.log(window.innerHeight);
 }
 
 // Hide coords when mouse leaves canvas
