@@ -28,22 +28,29 @@ const CTX = CANVAS.getContext('2d', { willReadFrequently: true }); // Canvas con
 let BACKGROUND_COLOR = '#FFFFFF';
 let WALL_COLOR = '#A000C8';
 let PHOTON_TAIL_COLOR = '#FFA500';
-let PHOTON_TOP_COLOR = "#FF0000";
+let PHOTON_TOP_COLOR = '#009DFF';
 let PHOTON_HEAD_COLOR = '#E1FF00';
-let LIGHT_SOURCE_COLOR = '#FF0000';
+let LIGHT_SOURCE_COLOR = '#00FF00';
 let BOUND_COLOR = "#FF0000";
 let DRAG_LINE_COLOR = "#FF0000";
+let PART_COLOR = '#FF0000';
 
-let PHOTON_RADIUS = 0.11; // Distance away from source
+let SHOW_PART = true;
+let IS_ON_HORIZONTAL_BOUND_VAR = false;
+let IS_ON_VERTICAL_BOUND_VAR = false;
+let IS_ON_HYPO_BOUND_VAR = false;
+let IS_ON_CORNER_VAR = false;
+let PHOTON_RADIUS = 2.50; // Distance away from source
 //let NUMBER_LIGHT_RAYS = 360;
 let ANGLE = 45;
 let M = 1;
 let N = 1;
+let TRIANGLE_SIDE = 100;
 const RENDER_INTERVAL_TIME = 33;
 let SPEED_TIMES_TEN = 500;
 let HEAD_SIZE = 3.00;
-let TAIL_SIZE = 50.00;
-let TRIANGLE_SIDE = 100;
+let TAIL_SIZE = (TRIANGLE_SIDE/M)*Math.sin(Math.atan(M/N));
+let TAIL_SIZE_2 = 2.00;
 let CORNER_EPS = 0.001; // Radius of the epsilon ball around each corner for collision detection
 
 //For magnification and dragging
@@ -76,5 +83,7 @@ var RECORDING = document.getElementById('recording');
 var DOWNLOAD_BUTTON = document.getElementById('downloadButton');
 var STATUS_ELEMENT = document.getElementById('status');
 var NUM_CAPTURED_FRAMES = 0;
+
+let SCREEN_ZOOM = 0.97 * (window.innerWidth / 1850);
 
 let lightSource = { x: 450, y: 400 };
