@@ -20,9 +20,54 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. */
 
+//Screen Zoom
+function setZoom() {
+  SCREEN_ZOOM = 0.97 * (window.innerWidth / 1850);
+  document.body.style.transform = `scale(${SCREEN_ZOOM})`;
+  document.body.style.transformOrigin = "0 0"; // Set the origin to top-left
+}
+setZoom();
+
 //Dark Mode toggle
 function toggleDarkMode() {
   document.body.classList.toggle('dark-mode');
+}
+
+// Version toggle
+function toggleVersion() {
+  const select = document.getElementById('triangleSideInput');
+  const options = select.options;
+
+  if (triangle.checked) {
+    // Reset options to original "Triangles"
+    for (let i = 0; i < options.length; i++) {
+      let optionText = options[i].text;
+      let numberMatch = optionText.match(/\d+/);
+      if (numberMatch) {
+        let originalNumber = parseInt(numberMatch[0]) * 2; // Multiply by 2 to get back original value
+        options[i].text = optionText.replace(/\d+/, originalNumber).replace('Squares', 'Triangles');
+      }
+    }
+    SELECTED_TRIANGLES = [];
+    TRIANGLES = [];
+    drawTriangles();
+    createTriangleGrid();
+  } else {
+    // Modify options to "Squares" and halve the numbers
+    for (let i = 0; i < options.length; i++) {
+      let optionText = options[i].text;
+      let numberMatch = optionText.match(/\d+/);
+      if (numberMatch) {
+        let number = parseInt(numberMatch[0]);
+        let newNumber = number / 2;
+        options[i].text = optionText.replace(number, newNumber).replace('Triangles', 'Squares');
+      }
+    }
+    SELECTED_TRIANGLES = [];
+    TRIANGLES = [];
+    drawTriangles();
+    createSquareGrid();
+  }
 }
 
 // Displays the grid when you first open the program
@@ -30,7 +75,9 @@ function initialize() {
   createTriangleGrid();
   CANVAS.addEventListener('click', clickHandler); // Left click for selecting the triangles
   //CANVAS.addEventListener('contextmenu', setLightSource); // Right click for moving the light source
+  turnPartitionOnOff();
   drawLightSource();
+  changePartitionCoordinates();
 }
 
 // Handles clicks
@@ -124,6 +171,39 @@ function blackbackground() {
   updateScreen();
 }
 
+//Turns Partition/Post on and off
+function turnPartitionOnOff() {
+  const num = parseInt(document.getElementById("partitionOnOffInput").value);
+  if (num === 0) {
+    SHOW_PART = false; //Turns Partition/Post off
+    // Hides the partition coordinates table:
+    part.style.visibility = 'hidden';
+    partButton.style.visibility = 'hidden';
+    partX.style.visibility = 'hidden';
+    partY.style.visibility = 'hidden';
+    part1.style.visibility = 'hidden';
+    part2.style.visibility = 'hidden';
+    partBoxXInput1.style.display = 'none';
+    partBoxYInput1.style.display = 'none';
+    partBoxXInput2.style.display = 'none';
+    partBoxYInput2.style.display = 'none';
+  } else if (num === 1) {
+    SHOW_PART = true; //Turns Partition/Post on
+    // Shows the partition coordinates table:
+    part.style.visibility = 'visible';
+    partButton.style.visibility = 'visible';
+    partX.style.visibility = 'visible';
+    partY.style.visibility = 'visible';
+    part1.style.visibility = 'visible';
+    part2.style.visibility = 'visible';
+    partBoxXInput1.style.display = 'inline';
+    partBoxYInput1.style.display = 'inline';
+    partBoxXInput2.style.display = 'inline';
+    partBoxYInput2.style.display = 'inline';
+  }
+  createShape(); // Update canvas with new coordinates
+}
+
 // Turns the mouse coordinates on and off
 function changeMouseCoordsVisibility() {
   const mouseVisibilityCheckBox = document.getElementById("mouseVisibilityCheckBox");
@@ -149,9 +229,21 @@ function changeLightSourceCoordinates() {
   COORDS = Array.from(setCOORDS).map(JSON.parse);
 
   // Log the COORDS and Boundaries list
-  console.log("COORDS Array:", COORDS);
-  console.log("Boundaries Array:", BOUNDARIES);
+  //console.log("COORDS Array:", COORDS);
+  //console.log("Boundaries Array:", BOUNDARIES);
+  isOnBound();
+  isOnCorner();
   updateScreen(); // Update canvas with new coordinates
+}
+
+// Changes the coordinates of Partition/Post
+function changePartitionCoordinates() {
+  x1 = parseInt(document.getElementById("partBoxXInput1").value);
+  y1 = parseInt(document.getElementById("partBoxYInput1").value);
+  x2 = parseInt(document.getElementById("partBoxXInput2").value);
+  y2 = parseInt(document.getElementById("partBoxYInput2").value);
+  PARTITIONS = [new LineSegment(x1, y1, x2, y2)]
+  createShape(); // Update canvas with new coordinates
 }
 
 // Changes M & N values
@@ -159,6 +251,7 @@ function changeMN() {
   M = parseInt(document.getElementById("MInput").value);
   N = parseInt(document.getElementById("NInput").value);
   TAIL_SIZE = (TRIANGLE_SIDE/M)*Math.sin(Math.atan(M/N));
+  //console.log(TAIL_SIZE);
 
   // Find the line segment with the largest y1 and y1 == y2
   let maxYLineSegment = null;
@@ -199,10 +292,12 @@ function changeMN() {
     COORDS = Array.from(setCOORDS).map(JSON.parse);
 
     // Log the COORDS and Boundaries list
-    console.log("COORDS Array:", COORDS);
-    console.log("Boundaries Array:", BOUNDARIES);
+    //console.log("COORDS Array:", COORDS);
+    //console.log("Boundaries Array:", BOUNDARIES);
     updateScreen(); // Update canvas with new coordinates
   }
+  isOnBound();
+  isOnCorner();
 }
 
 //log function
@@ -230,12 +325,12 @@ function changeSpeed() {
   //console.log(SPEED_TIMES_TEN)
 }
 
-// Advanced Function to change rendering speed to 1000
+// Advanced Function to change rendering speed to 10000
 function changeSpeed2() {
-  SPEED_TIMES_TEN = 1000;
-  document.getElementById("speedInput").value = 1000;
+  SPEED_TIMES_TEN = 10000;
+  document.getElementById("speedInput").value = 10000;
   document.getElementById("speedInput").classList.add("red_slider");
-  document.getElementById("speedValue").textContent = 1000; // Update the displayed value
+  document.getElementById("speedValue").textContent = 10000; // Update the displayed value
   //console.log(SPEED_TIMES_TEN)
 }
 
@@ -253,8 +348,21 @@ function changeNumberTriangles(){
   TRIANGLE_SIDE = parseInt(document.getElementById("triangleSideInput").value);
   TRIANGLES = [];
   SELECTED_TRIANGLES = [];
-  createTriangleGrid();
+  if (triangle.checked) {
+    createTriangleGrid();
+  } else {
+    createSquareGrid();
+  }
   //console.log(TRIANGLE_SIDE);
+  changeMN();
+}
+
+function changeThickness() {
+  TAIL_SIZE_2 = parseFloat(document.getElementById("tailSize2Input").value);
+}
+
+function changeDistanceFromSource() {
+  PHOTON_RADIUS = parseFloat(document.getElementById("sourceDistanceInput").value);
 }
 
 // Function to make the grid of triangles
@@ -340,17 +448,22 @@ function drawTriangles() {
     path.moveTo(p1.x, p1.y);
     path.lineTo(p2.x, p2.y);
     path.lineTo(p3.x, p3.y);
+    if(square.checked) {
+      const p4 = map(new Vector(triangle.point4.x, triangle.point4.y));
+      path.lineTo(p4.x, p4.y);
+    }
     path.closePath();
     if (triangle.selected) {
       CTX.fillStyle = 'black';
       CTX.strokeStyle = WALL_COLOR;
       CTX.fill(path);
     }
-    if(BACKGROUND_COLOR == "#000000") this.ctx.globalAlpha = 0.0; // To remove the grid lines while recording
+    if(BACKGROUND_COLOR == "#000000") CTX.globalAlpha = 0.0; // To remove the grid lines while recording
     CTX.stroke(path);
     CTX.strokeStyle = WALL_COLOR;
     CTX.globalAlpha = 1; // Change it to default after done
   });
+  drawPartitions();
   drawLightSource();
 }
 
@@ -381,20 +494,50 @@ function drawTriangles2() {
     path.moveTo(p1.x, p1.y);
     path.lineTo(p2.x, p2.y);
     path.lineTo(p3.x, p3.y);
+    if(square.checked) {
+      const p4 = map(new Vector(triangle.point4.x, triangle.point4.y));
+      path.lineTo(p4.x, p4.y);
+    }
     path.closePath();
     if (!triangle.selected) {
       CTX.fillStyle = BACKGROUND_COLOR;
       CTX.strokeStyle = WALL_COLOR;
       CTX.fill(path);
     }
-    if(BACKGROUND_COLOR == "#000000") this.ctx.globalAlpha = 0.0; // To remove the grid lines while recording
+    if(BACKGROUND_COLOR == "#000000") CTX.globalAlpha = 0.0; // To remove the grid lines while recording
     CTX.stroke(path);
     CTX.strokeStyle = WALL_COLOR;
     CTX.globalAlpha = 1; // Change it to default after done
   });
+  drawPartitions();
   drawLightSource();
 }
 
+// Function to make the grid of squares
+function createSquareGrid() {
+  const squareSize = TRIANGLE_SIDE;
+  // Split canvas into square cells
+  for (let y = 0; y < CANVAS.height; y += squareSize) {
+    for (let x = 0; x < CANVAS.width; x += squareSize) {
+      let square = new Path2D();
+      square.moveTo(x, y);
+      square.lineTo(x + squareSize, y);
+      square.lineTo(x + squareSize, y + squareSize);
+      square.lineTo(x, y + squareSize);
+      square.closePath();
+      let squareObj = {
+        path: square,
+        selected: false,
+        point1: { x: x, y: y },
+        point2: { x: x + squareSize, y: y },
+        point3: { x: x + squareSize, y: y + squareSize },
+        point4: { x: x, y: y + squareSize }
+      };
+      TRIANGLES.push(squareObj);
+    }
+  }
+  drawTriangles();
+}
 
 // Draws the light source point
 function drawLightSource() {
@@ -493,42 +636,118 @@ function mergeLineSegments() {
   return done;
 }
 
+function isOnBound() {
+  IS_ON_HORIZONTAL_BOUND_VAR = false;
+  IS_ON_VERTICAL_BOUND_VAR = false;
+  IS_ON_HYPO_BOUND_VAR = false;
+  BOUNDARIES.forEach(lineSeg => {
+    if (lineSeg.y1 === lineSeg.y2 && lightSource.y === lineSeg.y1 && ((lightSource.x < lineSeg.x1 && lightSource.x > lineSeg.x2)||(lightSource.x < lineSeg.x2 && lightSource.x > lineSeg.x1))) {
+      IS_ON_HORIZONTAL_BOUND_VAR = true;
+      IS_ON_VERTICAL_BOUND_VAR = false;
+      IS_ON_HYPO_BOUND_VAR = false;
+    }
+    else if (lineSeg.x1 === lineSeg.x2 && lightSource.x === lineSeg.x1 && ((lightSource.y < lineSeg.y1 && lightSource.y > lineSeg.y2)||(lightSource.y < lineSeg.y2 && lightSource.y > lineSeg.y1))) {
+      IS_ON_HORIZONTAL_BOUND_VAR = false;
+      IS_ON_VERTICAL_BOUND_VAR = true;
+      IS_ON_HYPO_BOUND_VAR = false;
+    }
+    else if (lineSeg.x1 != lineSeg.x2 && lineSeg.y1 != lineSeg.y2 && ((lightSource.x-lineSeg.x1)*(lightSource.y-lineSeg.y2)===(lightSource.x-lineSeg.x2)*(lightSource.y-lineSeg.y1)) && (lightSource.x != lineSeg.x1 && lightSource.y != lineSeg.y1) && (lightSource.x != lineSeg.x2 && lightSource.y != lineSeg.y2)) {
+      IS_ON_HORIZONTAL_BOUND_VAR = false;
+      IS_ON_VERTICAL_BOUND_VAR = false;
+      IS_ON_HYPO_BOUND_VAR = true;
+    }
+  });
+  //console.log("is on horizontal bound:",IS_ON_HORIZONTAL_BOUND_VAR);
+  //console.log("is on vertical bound:",IS_ON_VERTICAL_BOUND_VAR);
+  //console.log("is on hypo bound:",IS_ON_HYPO_BOUND_VAR);
+}
+
+function isOnCorner() {
+  IS_ON_CORNER_VAR = BOUNDARIES.some(lineSeg => 
+      (lightSource.x === lineSeg.x1 && lightSource.y === lineSeg.y1) || 
+      (lightSource.x === lineSeg.x2 && lightSource.y === lineSeg.y2)
+  );
+  //console.log("is on corner:",IS_ON_CORNER_VAR);
+}
+
 // Creates the user selected shape
 function createShape() {
   // Clear the COORDS list
   COORDS = [];
   BOUNDARIES = new Array();
  
-  // Iterate through selected triangles
-  SELECTED_TRIANGLES.forEach(triangle => {
-    // Extract coordinates of triangle's vertices
-    let point1 = triangle.point1;
-    let point2 = triangle.point2;
-    let point3 = triangle.point3;
-        
-    // Add vertices' coordinates to COORDS list
-    BOUNDARIES.push(new LineSegment(
-      point1.x,
-      point1.y,
-      point2.x,
-      point2.y,
-    ));
-    BOUNDARIES.push(new LineSegment(
-      point2.x,
-      point2.y,
-      point3.x,
-      point3.y,
-    ));
-    BOUNDARIES.push(new LineSegment(
-      point3.x,
-      point3.y,
-      point1.x,
-      point1.y,
-    ));
-    //COORDS.push([point1.x, point1.y]);
-    //COORDS.push([point2.x, point2.y]);
-    //COORDS.push([point3.x, point3.y]);
-  });
+  if (triangle.checked) {
+    // Iterate through selected triangles
+    SELECTED_TRIANGLES.forEach(triangle => {
+      // Extract coordinates of triangle's vertices
+      let point1 = triangle.point1;
+      let point2 = triangle.point2;
+      let point3 = triangle.point3;
+          
+      // Add vertices' coordinates to COORDS list
+      BOUNDARIES.push(new LineSegment(
+        point1.x,
+        point1.y,
+        point2.x,
+        point2.y,
+      ));
+      BOUNDARIES.push(new LineSegment(
+        point2.x,
+        point2.y,
+        point3.x,
+        point3.y,
+      ));
+      BOUNDARIES.push(new LineSegment(
+        point3.x,
+        point3.y,
+        point1.x,
+        point1.y,
+      ));
+      
+      //COORDS.push([point1.x, point1.y]);
+      //COORDS.push([point2.x, point2.y]);
+      //COORDS.push([point3.x, point3.y]);
+    });
+  } else {
+    // Iterate through selected triangles
+    SELECTED_TRIANGLES.forEach(square => {
+      // Extract coordinates of triangle's vertices
+      let point1 = square.point1;
+      let point2 = square.point2;
+      let point3 = square.point3;
+      let point4 = square.point4;
+          
+      // Add vertices' coordinates to COORDS list
+      BOUNDARIES.push(new LineSegment(
+        point1.x,
+        point1.y,
+        point2.x,
+        point2.y,
+      ));
+      BOUNDARIES.push(new LineSegment(
+        point2.x,
+        point2.y,
+        point3.x,
+        point3.y,
+      ));
+      BOUNDARIES.push(new LineSegment(
+        point3.x,
+        point3.y,
+        point4.x,
+        point4.y,
+      ));
+      BOUNDARIES.push(new LineSegment(
+        point4.x,
+        point4.y,
+        point1.x,
+        point1.y,
+      ));
+      
+      //COORDS.push([point1.x, point1.y]);
+      //COORDS.push([point2.x, point2.y]);
+      //COORDS.push([point3.x, point3.y]);
+    });
+  }
 
   pruneRepeatedBounds();
 
@@ -583,10 +802,15 @@ function createShape() {
   const setCOORDS = new Set(COORDS.map(JSON.stringify));
   COORDS = Array.from(setCOORDS).map(JSON.parse);
 
+  if(SHOW_PART) PARTITIONS.forEach(lineSeg => BOUNDARIES.push(lineSeg));
   // Log the COORDS and Boundaries list
   console.log("COORDS Array:", COORDS);
   console.log("Boundaries Array:", BOUNDARIES);
+  changeMN();
   drawTriangles();
+  drawPartitions();
+  isOnBound();
+  isOnCorner();
 }
 
 // Creates the user selected shape
@@ -595,36 +819,78 @@ function createShape2() {
   COORDS = [];
   BOUNDARIES = new Array();
  
-  // Iterate through selected triangles
-  SELECTED_TRIANGLES.forEach(triangle => {
-    // Extract coordinates of triangle's vertices
-    let point1 = triangle.point1;
-    let point2 = triangle.point2;
-    let point3 = triangle.point3;
-        
-    // Add vertices' coordinates to COORDS list
-    BOUNDARIES.push(new LineSegment(
-      point1.x,
-      point1.y,
-      point2.x,
-      point2.y,
-    ));
-    BOUNDARIES.push(new LineSegment(
-      point2.x,
-      point2.y,
-      point3.x,
-      point3.y,
-    ));
-    BOUNDARIES.push(new LineSegment(
-      point3.x,
-      point3.y,
-      point1.x,
-      point1.y,
-    ));
-    //COORDS.push([point1.x, point1.y]);
-    //COORDS.push([point2.x, point2.y]);
-    //COORDS.push([point3.x, point3.y]);
-  });
+  if (triangle.checked) {
+    // Iterate through selected triangles
+    SELECTED_TRIANGLES.forEach(triangle => {
+      // Extract coordinates of triangle's vertices
+      let point1 = triangle.point1;
+      let point2 = triangle.point2;
+      let point3 = triangle.point3;
+          
+      // Add vertices' coordinates to COORDS list
+      BOUNDARIES.push(new LineSegment(
+        point1.x,
+        point1.y,
+        point2.x,
+        point2.y,
+      ));
+      BOUNDARIES.push(new LineSegment(
+        point2.x,
+        point2.y,
+        point3.x,
+        point3.y,
+      ));
+      BOUNDARIES.push(new LineSegment(
+        point3.x,
+        point3.y,
+        point1.x,
+        point1.y,
+      ));
+      
+      //COORDS.push([point1.x, point1.y]);
+      //COORDS.push([point2.x, point2.y]);
+      //COORDS.push([point3.x, point3.y]);
+    });
+  } else {
+    // Iterate through selected triangles
+    SELECTED_TRIANGLES.forEach(square => {
+      // Extract coordinates of triangle's vertices
+      let point1 = square.point1;
+      let point2 = square.point2;
+      let point3 = square.point3;
+      let point4 = square.point4;
+          
+      // Add vertices' coordinates to COORDS list
+      BOUNDARIES.push(new LineSegment(
+        point1.x,
+        point1.y,
+        point2.x,
+        point2.y,
+      ));
+      BOUNDARIES.push(new LineSegment(
+        point2.x,
+        point2.y,
+        point3.x,
+        point3.y,
+      ));
+      BOUNDARIES.push(new LineSegment(
+        point3.x,
+        point3.y,
+        point4.x,
+        point4.y,
+      ));
+      BOUNDARIES.push(new LineSegment(
+        point4.x,
+        point4.y,
+        point1.x,
+        point1.y,
+      ));
+      
+      //COORDS.push([point1.x, point1.y]);
+      //COORDS.push([point2.x, point2.y]);
+      //COORDS.push([point3.x, point3.y]);
+    });
+  }
 
   pruneRepeatedBounds();
 
@@ -643,11 +909,16 @@ function createShape2() {
   const setCOORDS = new Set(COORDS.map(JSON.stringify));
   COORDS = Array.from(setCOORDS).map(JSON.parse);
 
+  if(SHOW_PART) PARTITIONS.forEach(lineSeg => BOUNDARIES.push(lineSeg));
   // Log the COORDS and Boundaries list
   console.log("COORDS Array:", COORDS);
   console.log("Boundaries Array:", BOUNDARIES);
+  changeMN();
   drawTriangles();
+  drawPartitions();
   changeLightSourceCoordinates();
+  isOnBound();
+  isOnCorner();
 }
 
 function startAnimation() {
@@ -665,6 +936,25 @@ function startMultiAnimation() {
   const maxN = N;
   for (i = 0; i <= maxM; i++) {
       for (j = 0; j <= maxN; j++) {
+          M = i;
+          N = j;
+          //console.log(M);
+          //console.log(N);
+          ANGLE = (180/Math.PI)*(Math.atan(M/N));
+          TAIL_SIZE = (TRIANGLE_SIDE/M)*Math.sin(Math.atan(M/N));
+          addPhoton2();
+      }
+  }
+}
+
+function startMultiOddAnimation() {
+  PHOTONS = [];
+  clearInterval(RENDER_INTERVAL);
+  RENDER_INTERVAL = setInterval(updateScreen, RENDER_INTERVAL_TIME);
+  const maxM = M;
+  const maxN = N;
+  for (i = 1; i <= maxM; i+=2) {
+      for (j = 1; j <= maxN; j+=2) {
           M = i;
           N = j;
           //console.log(M);
@@ -695,31 +985,158 @@ function startMultiAnimation2() {
   }
 }
 
+function startMultiOddAnimation2() {
+  PHOTONS = [];
+  clearInterval(RENDER_INTERVAL);
+  RENDER_INTERVAL = setInterval(updateScreen, RENDER_INTERVAL_TIME);
+  const maxM = M;
+  const maxN = N;
+  for (i = 1; i <= maxM; i+=2) {
+      for (j = 1; j <= maxN; j+=2) {
+          M = i;
+          N = j;
+          //console.log(M);
+          //console.log(N);
+          ANGLE = (180/Math.PI)*(Math.atan(M/N));
+          TAIL_SIZE = (TRIANGLE_SIDE/M)*Math.sin(Math.atan(M/N));
+          addPhoton();
+      }
+  }
+}
+
 function stopAnimation() {
   clearInterval(RENDER_INTERVAL);
 }
 
+function clearRays() {
+  clearInterval(RENDER_INTERVAL);
+  PHOTONS = [];
+  updateScreen();
+}
+
+
 // Creates photon
 function createPhotons() {
   PHOTONS = [];
-  PHOTONS.push(new Photon(
+  if (document.getElementById("modeInput").value == 2 || document.getElementById("modeInput").value == 3) {
+    PHOTONS.push(new Photon(
       lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * (-ANGLE / 180)), 
       lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * (-ANGLE / 180)), 
-      Math.PI * (-ANGLE / 180), 
+      Math.PI * (-ANGLE / 180),
       (SPEED_TIMES_TEN/10),
       PHOTON_HEAD_COLOR, 
       PHOTON_TAIL_COLOR,
       TAIL_SIZE)
       );
-  PHOTONS.push(new Photon(
-      lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * (-ANGLE / 180)), 
-      lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * (-ANGLE / 180)), 
-      Math.PI * (-ANGLE / 180), 
-      (SPEED_TIMES_TEN/10),
-      PHOTON_HEAD_COLOR, 
-      PHOTON_TOP_COLOR,
-      Math.min(2,(TAIL_SIZE/5)))
-      );
+      //Inside
+      if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+        PHOTONS.push(new Photon(
+          lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-180-ANGLE) / 180)), 
+          lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-180-ANGLE) / 180)), 
+          Math.PI * ((-180-ANGLE) / 180), 
+          (SPEED_TIMES_TEN/10),
+          PHOTON_HEAD_COLOR, 
+          PHOTON_TAIL_COLOR,
+          TAIL_SIZE)
+          );
+      }
+      //Horizontal
+      if (IS_ON_HORIZONTAL_BOUND_VAR == true && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+        PHOTONS.push(new Photon(
+          lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-180+ANGLE) / 180)), 
+          lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-180+ANGLE) / 180)), 
+          Math.PI * ((-180+ANGLE) / 180), 
+          (SPEED_TIMES_TEN/10),
+          PHOTON_HEAD_COLOR, 
+          PHOTON_TAIL_COLOR,
+          TAIL_SIZE)
+          );
+      }
+      //Vertical
+      if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == true && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+        PHOTONS.push(new Photon(
+          lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-270-ANGLE) / 180)), 
+          lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-270-ANGLE) / 180)), 
+          Math.PI * ((-270-ANGLE) / 180), 
+          (SPEED_TIMES_TEN/10),
+          PHOTON_HEAD_COLOR, 
+          PHOTON_TAIL_COLOR,
+          TAIL_SIZE)
+          );
+      }
+      //Diagonal
+      if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == true && IS_ON_CORNER_VAR == false) {
+        PHOTONS.push(new Photon(
+          lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-90+ANGLE) / 180)), 
+          lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-90+ANGLE) / 180)), 
+          Math.PI * ((-90+ANGLE) / 180), 
+          (SPEED_TIMES_TEN/10),
+          PHOTON_HEAD_COLOR, 
+          PHOTON_TAIL_COLOR,
+          TAIL_SIZE)
+          );
+      }
+  }
+
+  if (document.getElementById("modeInput").value == 2 || document.getElementById("modeInput").value == 1) {
+    PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * (-ANGLE / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * (-ANGLE / 180)), 
+        Math.PI * (-ANGLE / 180), 
+        (SPEED_TIMES_TEN/10),
+        PHOTON_HEAD_COLOR, 
+        PHOTON_TOP_COLOR,
+        Math.min(TAIL_SIZE_2,(TAIL_SIZE/5)))
+        );
+    //Inside
+    if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-180-ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-180-ANGLE) / 180)), 
+        Math.PI * ((-180-ANGLE) / 180), 
+        (SPEED_TIMES_TEN/10),
+        PHOTON_HEAD_COLOR, 
+        PHOTON_TOP_COLOR,
+        Math.min(TAIL_SIZE_2,(TAIL_SIZE/5)))
+        );
+    }
+    //Horizontal
+    if (IS_ON_HORIZONTAL_BOUND_VAR == true && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-180+ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-180+ANGLE) / 180)), 
+        Math.PI * ((-180+ANGLE) / 180), 
+        (SPEED_TIMES_TEN/10),
+        PHOTON_HEAD_COLOR, 
+        PHOTON_TOP_COLOR,
+        Math.min(TAIL_SIZE_2,(TAIL_SIZE/5)))
+        );
+    }
+    //Vertical
+    if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == true && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-270-ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-270-ANGLE) / 180)), 
+        Math.PI * ((-270-ANGLE) / 180), 
+        (SPEED_TIMES_TEN/10),
+        PHOTON_HEAD_COLOR, 
+        PHOTON_TOP_COLOR,
+        Math.min(TAIL_SIZE_2,(TAIL_SIZE/5)))
+        );
+    }
+    //Diagonal
+    if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == true && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-90+ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-90+ANGLE) / 180)), 
+        Math.PI * ((-90+ANGLE) / 180), 
+        (SPEED_TIMES_TEN/10),
+        PHOTON_HEAD_COLOR, 
+        PHOTON_TOP_COLOR,
+        Math.min(TAIL_SIZE_2,(TAIL_SIZE/5)))
+        );
+    }
+  }
 }
 
 function getRandomColor() {
@@ -733,46 +1150,252 @@ function getRandomColor() {
 
 // Adds new photon
 function addPhoton() {
-  PHOTONS.push(new Photon(
-    lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * (-ANGLE / 180)), 
-    lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * (-ANGLE / 180)), 
-    Math.PI * (-((180/Math.PI)*(Math.atan(M/N))) / 180), 
-    (SPEED_TIMES_TEN/10),
-    getRandomColor(), 
-    getRandomColor(),
-    TAIL_SIZE)
-    );
-  PHOTONS.push(new Photon(
-    lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * (-ANGLE / 180)), 
-    lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * (-ANGLE / 180)), 
-    Math.PI * (-((180/Math.PI)*(Math.atan(M/N))) / 180), 
-    (SPEED_TIMES_TEN/10),
-    getRandomColor(), 
-    getRandomColor(),
-    Math.min(2,(TAIL_SIZE/5)))
-    );
+  random1 = getRandomColor();
+  random2 = getRandomColor();
+  random3 = getRandomColor();
+  random4 = getRandomColor();
+  if (document.getElementById("modeInput").value == 2 || document.getElementById("modeInput").value == 3) {
+    PHOTONS.push(new Photon(
+      lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * (-ANGLE / 180)), 
+      lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * (-ANGLE / 180)), 
+      Math.PI * (-((180/Math.PI)*(Math.atan(M/N))) / 180), 
+      (SPEED_TIMES_TEN/10),
+      random1, 
+      random2,
+      TAIL_SIZE)
+      );
+    //Inside
+    if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-180-ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-180-ANGLE) / 180)), 
+        Math.PI * ((-180-((180/Math.PI)*(Math.atan(M/N)))) / 180), 
+        (SPEED_TIMES_TEN/10),
+        random1, 
+        random2,
+        TAIL_SIZE)
+        );
+    }
+    //Horizontal
+    if (IS_ON_HORIZONTAL_BOUND_VAR == true && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-180+ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-180+ANGLE) / 180)), 
+        Math.PI * ((-180+((180/Math.PI)*(Math.atan(M/N)))) / 180), 
+        (SPEED_TIMES_TEN/10),
+        random1, 
+        random2,
+        TAIL_SIZE)
+        );
+    }
+    //Vertical
+    if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == true && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-270-ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-270-ANGLE) / 180)), 
+        Math.PI * ((-270-((180/Math.PI)*(Math.atan(M/N)))) / 180), 
+        (SPEED_TIMES_TEN/10),
+        random1, 
+        random2,
+        TAIL_SIZE)
+        );
+    }
+    //Diagonal
+    if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == true && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-90+ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-90+ANGLE) / 180)), 
+        Math.PI * ((-90+((180/Math.PI)*(Math.atan(M/N)))) / 180),
+        (SPEED_TIMES_TEN/10),
+        random1, 
+        random2,
+        TAIL_SIZE)
+        );
+    }
+  }
+
+  if (document.getElementById("modeInput").value == 2 || document.getElementById("modeInput").value == 1) {
+    PHOTONS.push(new Photon(
+      lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * (-ANGLE / 180)), 
+      lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * (-ANGLE / 180)), 
+      Math.PI * (-((180/Math.PI)*(Math.atan(M/N))) / 180), 
+      (SPEED_TIMES_TEN/10),
+      random3, 
+      random4,
+      Math.min(TAIL_SIZE_2,(TAIL_SIZE/5)))
+      );
+    //Inside
+    if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-180-ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-180-ANGLE) / 180)), 
+        Math.PI * ((-180-((180/Math.PI)*(Math.atan(M/N)))) / 180), 
+        (SPEED_TIMES_TEN/10),
+        random3, 
+        random4,
+        Math.min(TAIL_SIZE_2,(TAIL_SIZE/5)))
+        );
+    }
+    //Horizontal
+    if (IS_ON_HORIZONTAL_BOUND_VAR == true && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-180+ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-180+ANGLE) / 180)), 
+        Math.PI * ((-180+((180/Math.PI)*(Math.atan(M/N)))) / 180), 
+        (SPEED_TIMES_TEN/10),
+        random3, 
+        random4,
+        Math.min(TAIL_SIZE_2,(TAIL_SIZE/5)))
+        );
+    }
+    //Vertical
+    if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == true && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-270-ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-270-ANGLE) / 180)), 
+        Math.PI * ((-270-((180/Math.PI)*(Math.atan(M/N)))) / 180), 
+        (SPEED_TIMES_TEN/10),
+        random3, 
+        random4,
+        Math.min(TAIL_SIZE_2,(TAIL_SIZE/5)))
+        );
+    }
+    //Diagonal
+    if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == true && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-90+ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-90+ANGLE) / 180)), 
+        Math.PI * ((-90+((180/Math.PI)*(Math.atan(M/N)))) / 180),
+        (SPEED_TIMES_TEN/10),
+        random3, 
+        random4,
+        Math.min(TAIL_SIZE_2,(TAIL_SIZE/5)))
+        );
+    }
+  }
 }
 
 // Adds new photon
 function addPhoton2() {
-  PHOTONS.push(new Photon(
-    lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * (-ANGLE / 180)), 
-    lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * (-ANGLE / 180)), 
-    Math.PI * (-((180/Math.PI)*(Math.atan(M/N))) / 180), 
-    (SPEED_TIMES_TEN/10),
-    PHOTON_HEAD_COLOR, 
-    PHOTON_TAIL_COLOR,
-    TAIL_SIZE)
-    );
-  PHOTONS.push(new Photon(
-    lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * (-ANGLE / 180)), 
-    lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * (-ANGLE / 180)), 
-    Math.PI * (-((180/Math.PI)*(Math.atan(M/N))) / 180), 
-    (SPEED_TIMES_TEN/10),
-    PHOTON_HEAD_COLOR, 
-    PHOTON_TOP_COLOR,
-    Math.min(2,(TAIL_SIZE/5)))
-    );
+  if (document.getElementById("modeInput").value == 2 || document.getElementById("modeInput").value == 3) {
+    PHOTONS.push(new Photon(
+      lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * (-ANGLE / 180)), 
+      lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * (-ANGLE / 180)), 
+      Math.PI * (-((180/Math.PI)*(Math.atan(M/N))) / 180), 
+      (SPEED_TIMES_TEN/10),
+      PHOTON_HEAD_COLOR, 
+      PHOTON_TAIL_COLOR,
+      TAIL_SIZE)
+      );
+    //Inside
+    if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-180-ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-180-ANGLE) / 180)), 
+        Math.PI * ((-180-((180/Math.PI)*(Math.atan(M/N)))) / 180), 
+        (SPEED_TIMES_TEN/10),
+        PHOTON_HEAD_COLOR, 
+        PHOTON_TAIL_COLOR,
+        TAIL_SIZE)
+        );
+    }
+    //Horizontal
+    if (IS_ON_HORIZONTAL_BOUND_VAR == true && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-180+ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-180+ANGLE) / 180)), 
+        Math.PI * ((-180+((180/Math.PI)*(Math.atan(M/N)))) / 180), 
+        (SPEED_TIMES_TEN/10),
+        PHOTON_HEAD_COLOR, 
+        PHOTON_TAIL_COLOR,
+        TAIL_SIZE)
+        );
+    }
+    //Vertical
+    if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == true && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-270-ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-270-ANGLE) / 180)), 
+        Math.PI * ((-270-((180/Math.PI)*(Math.atan(M/N)))) / 180), 
+        (SPEED_TIMES_TEN/10),
+        PHOTON_HEAD_COLOR, 
+        PHOTON_TAIL_COLOR,
+        TAIL_SIZE)
+        );
+    }
+    //Diagonal
+    if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == true && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-90+ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-90+ANGLE) / 180)), 
+        Math.PI * ((-90+((180/Math.PI)*(Math.atan(M/N)))) / 180),
+        (SPEED_TIMES_TEN/10),
+        PHOTON_HEAD_COLOR, 
+        PHOTON_TAIL_COLOR,
+        TAIL_SIZE)
+        );
+    }
+  }
+
+  if (document.getElementById("modeInput").value == 2 || document.getElementById("modeInput").value == 1) {
+    PHOTONS.push(new Photon(
+      lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * (-ANGLE / 180)), 
+      lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * (-ANGLE / 180)), 
+      Math.PI * (-((180/Math.PI)*(Math.atan(M/N))) / 180), 
+      (SPEED_TIMES_TEN/10),
+      PHOTON_HEAD_COLOR, 
+      PHOTON_TOP_COLOR,
+      Math.min(TAIL_SIZE_2,(TAIL_SIZE/5)))
+      );
+    //Inside
+    if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-180-ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-180-ANGLE) / 180)), 
+        Math.PI * ((-180-((180/Math.PI)*(Math.atan(M/N)))) / 180), 
+        (SPEED_TIMES_TEN/10),
+        PHOTON_HEAD_COLOR, 
+        PHOTON_TOP_COLOR,
+        Math.min(TAIL_SIZE_2,(TAIL_SIZE/5)))
+        );
+    }
+    //Horizontal
+    if (IS_ON_HORIZONTAL_BOUND_VAR == true && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-180+ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-180+ANGLE) / 180)), 
+        Math.PI * ((-180+((180/Math.PI)*(Math.atan(M/N)))) / 180), 
+        (SPEED_TIMES_TEN/10),
+        PHOTON_HEAD_COLOR, 
+        PHOTON_TOP_COLOR,
+        Math.min(TAIL_SIZE_2,(TAIL_SIZE/5)))
+        );
+    }
+    //Vertical
+    if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == true && IS_ON_HYPO_BOUND_VAR == false && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-270-ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-270-ANGLE) / 180)), 
+        Math.PI * ((-270-((180/Math.PI)*(Math.atan(M/N)))) / 180), 
+        (SPEED_TIMES_TEN/10),
+        PHOTON_HEAD_COLOR, 
+        PHOTON_TOP_COLOR,
+        Math.min(TAIL_SIZE_2,(TAIL_SIZE/5)))
+        );
+    }
+    //Diagonal
+    if (IS_ON_HORIZONTAL_BOUND_VAR == false && IS_ON_VERTICAL_BOUND_VAR == false && IS_ON_HYPO_BOUND_VAR == true && IS_ON_CORNER_VAR == false) {
+      PHOTONS.push(new Photon(
+        lightSource.x + PHOTON_RADIUS * Math.cos(Math.PI * ((-90+ANGLE) / 180)), 
+        lightSource.y + PHOTON_RADIUS * Math.sin(Math.PI * ((-90+ANGLE) / 180)), 
+        Math.PI * ((-90+((180/Math.PI)*(Math.atan(M/N)))) / 180),
+        (SPEED_TIMES_TEN/10),
+        PHOTON_HEAD_COLOR, 
+        PHOTON_TOP_COLOR,
+        Math.min(TAIL_SIZE_2,(TAIL_SIZE/5)))
+        );
+    }
+  }
 }
 
 // Updates the screen
@@ -781,6 +1404,7 @@ function updateScreen() {
   drawTriangles();
   drawPhotons();
   drawTriangles2();
+  drawPartitions();
   drawLightSource();
   if (CURRENTLY_RECORDING) {
     VIDEO.add(CTX);
@@ -885,10 +1509,20 @@ function drawLine(x1, y1, x2, y2, color, width = TAIL_SIZE) {
 function drawBounds() {
   // Takes all the lines from the BOUNDARIES array and draws a line at them
   BOUNDARIES.forEach(lineSeg => {
-  drawLine(lineSeg.x1, lineSeg.y1, lineSeg.x2, lineSeg.y2, BOUND_COLOR, 3);
+    let isPartition = false;
+    PARTITIONS.forEach(part => {isPartition = (isPartition || part.equals(lineSeg))})
+    if(!(isPartition && SHOW_PART)) drawLine(lineSeg.x1, lineSeg.y1, lineSeg.x2, lineSeg.y2, BOUND_COLOR, 3);
   });
   // Takes all the points from the COORDS array and draws a circle at them
   COORDS.forEach(coord => {drawCircle(coord[0], coord[1], 1.5, BOUND_COLOR)});
+}
+
+// Draws the partitions
+function drawPartitions() {
+  if(!SHOW_PART) return;
+  PARTITIONS.forEach(part => drawLine(part.x1, part.y1, part.x2, part.y2, PART_COLOR, 3));
+  PARTITIONS.forEach(part => drawCircle(part.x1, part.y1, 1.5, PART_COLOR));
+  PARTITIONS.forEach(part => drawCircle(part.x2, part.y2, 1.5, PART_COLOR));
 }
 
 // Recording:
